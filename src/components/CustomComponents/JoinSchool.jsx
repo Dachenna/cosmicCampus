@@ -31,7 +31,8 @@ const JoinSchool = () => {
       .eq('is_deleted', false);
 
     if (debouncedSearchTerm) {
-      query = query.ilike('name', `%${debouncedSearchTerm}%`);
+      query = query.ilike('name', `%${debouncedSearchTerm}%
+        `);
     }
 
     query = query.range(from, to);
