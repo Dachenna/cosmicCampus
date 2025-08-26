@@ -1,70 +1,101 @@
-import React, { useEffect } from 'react';
-import H1 from '../Typography/H1';
-import { Button } from '../ui/button';
-import H4 from '../Typography/H4';
+import { useEffect, useRef } from 'react';
+import { Button } from '../ui/button'
 import Logo from "../../assets/cosmic.png";
 import { Link } from 'react-router-dom';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Hero = () => {
+  const rootRef = useRef(null);
+
   useEffect(() => {
-    const blobs = document.querySelectorAll('.floating-blob');
-    const colors = [
-      "linear-gradient(to bottom right, #3b82f6, transparent)", // Blue
-      "linear-gradient(to bottom right, #9333ea, transparent)", // Purple
-      "linear-gradient(to bottom right, #ec4899, transparent)"  // Pink
-    ];
+    const root = rootRef.current;
+    if (!root) return;
 
-    const animateBlobs = () => {
-      blobs.forEach((blob) => {
-        const randomX = (Math.random() - 0.5) * 200;
-        const randomY = (Math.random() - 0.5) * 200;
-        const randomGradient = colors[Math.floor(Math.random() * colors.length)];
+    // Entrance animation for headline and buttons
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
-        blob.style.transform = `translate(${randomX}px, ${randomY}px)`;
-        blob.style.backgroundImage = randomGradient;
-        blob.style.transition = 'transform 4s ease-in-out, background-image 2s ease-in-out';
-      });
+    tl.from(root.querySelectorAll('.hero-line'), {
+      y: 40,
+      opacity: 0,
+      stagger: 0.08,
+      duration: 0.7,
+    })
+      .from(
+        root.querySelectorAll('.hero-copy'),
+        { y: 20, opacity: 0, duration: 0.6 },
+        '-=0.3'
+      )
+      .from(
+        root.querySelectorAll('.hero-ctas > *'),
+        { y: 12, opacity: 0, stagger: 0.08, duration: 0.5 },
+        '-=0.4'
+      );
+
+    // Scroll-triggered pin/animation for decorative image (optional)
+    const img = root.querySelector('.hero-aside');
+    if (img) {
+      gsap.fromTo(
+        img,
+        { y: 40, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          scrollTrigger: {
+            trigger: root,
+            start: 'top top+=50',
+            end: 'bottom top',
+            scrub: true,
+          },
+        }
+      );
+    }
+
+    return () => {
+      ScrollTrigger.getAll().forEach(t => t.kill());
+      tl.kill();
     };
-
-    const interval = setInterval(animateBlobs, 3000);
-    return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className='w-full flex items-center justify-center shadow-md h-[87vh] relative mt-24 dark:bg-black overflow-hidden'>
-      {/* Floating Blobs */}
-      <div className="floating-blob absolute w-1/2 h-1/2 opacity-30 blur-3xl animate-float1"
-        style={{ clipPath: "polygon(10% 70%, 20% 20%, 90% 30%, 70% 90%)", top: "5%", left: "10%" }}>
-      </div>
-      <div className="floating-blob absolute w-1/3 h-1/3 opacity-30 blur-3xl animate-float2"
-        style={{ clipPath: "polygon(5% 80%, 25% 10%, 80% 40%, 90% 100%)", top: "40%", right: "5%" }}>
-      </div>
-      <div className="floating-blob absolute w-1/3 h-1/3 opacity-30 blur-3xl animate-float3"
-        style={{ clipPath: "polygon(15% 60%, 30% 10%, 70% 50%, 85% 90%)", bottom: "5%", left: "35%" }}>
-      </div>
+    <section  id="hero" className="w-full py-20">
+      <div className="container mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-8 items-center">
+        <div className="hero-left max-w-2xl">
+          <h1 className="text-5xl lg:text-6xl font-light leading-tight text-gray-900">
+            <span className="block hero-line">Welcome to</span>
+            <span className="block hero-line">Cosmic</span>
+            <span className="block hero-line">Campus:</span>
+            <span className="block hero-line">Where</span>
+            <span className="block hero-line">Learning</span>
+            <span className="block hero-line">Thrives</span>
+          </h1>
 
-      <div className='flex flex-col items-center justify-center gap-7 relative z-10'>
-        <div className="relative">
-          {/* Rotating Logo */}
-          <img src={Logo} className='w-32 rounded-full animate-rotate-3d relative z-10' alt="Cosmic Campus Logo" />
+          <p className="mt-6 text-gray-600 hero-copy">
+            At Cosmic Campus, we are dedicated to fostering academic excellence while
+            nurturing the whole child. Our vibrant community encourages exploration in both
+            academics and extracurricular activities, ensuring a well-rounded education.
+          </p>
 
-          {/* Moving Shadow */}
-          <div className="w-32 h-8 absolute top-full left-1/2 transform -translate-x-1/2 -translate-y-2 rounded-full bg-black/30 dark:bg-purple-500/50 blur-md opacity-75 animate-shadow-rotate"></div>
+          <div className="mt-6 hero-ctas flex gap-4">
+            <Link to="/about">
+              <Button variant="default">Learn More</Button>
+            </Link>
+            <Link to="/signup">
+              <Button variant="ghost">Sign Up</Button>
+            </Link>
+          </div>
         </div>
-        <H1 className="text-transparent text-center bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 dark:from-blue-500 dark:via-purple-500 dark:to-pink-500 animate-gradient-move">
-          Welcome To Cosmic Campus
-        </H1>
-        <div className='w-full flex flex-col justify-center items-center gap-7'>
-          <H4 className='text-center'>Join Our Cosmic Journey</H4>
-          <Link to={'/signup'}>
-            <Button className="bg-gradient-to-l from-blue-500 via-purple-500 to-pink-500 dark:from-blue-500 dark:via-purple-500 dark:to-pink-500 animate-gradient-move">
-              Get Started
-            </Button>
-          </Link>
-        </div>
+
+        <aside className="hero-aside flex justify-end">
+          <img src={Logo} alt="Cosmic" className="w-64 h-64 object-contain rounded-md shadow-lg" />
+        </aside>
       </div>
-    </div>
+    </section>
   );
 };
 
 export default Hero;
+
